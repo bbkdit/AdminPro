@@ -1,0 +1,109 @@
+<?php
+
+namespace App\DataTables;
+
+use App\Models\{{modelName}};
+use Yajra\DataTables\Html\Button;
+use Yajra\DataTables\Html\Column;
+use Yajra\DataTables\Html\Editor\Editor;
+use Yajra\DataTables\Html\Editor\Fields;
+use Yajra\DataTables\Services\DataTable;
+
+use Carbon\Carbon;
+
+class {{modelName}}DataTable extends DataTable
+{
+
+     protected $hidden = [
+        'is_deleted',
+        'deleted_at'
+    ];
+
+    public function dataTable($query)
+    {
+
+        return datatables()
+            ->eloquent($query)
+            ->filter(function($query) {
+                $query->where('is_deleted', 0);
+            })
+            ->editColumn('created_at', function ($query) {
+                return $query->created_at ? with(new Carbon($query->created_at))->format('d,M Y h:i:s A') : '';
+            })
+            ->editColumn('updated_at', function ($query) {
+                return $query->updated_at ? with(new Carbon($query->updated_at))->format('d,M Y h:i:s A') : '';
+            })
+            ->editColumn('status', function ($query) {
+                if($query->status > 0) {
+                    return 'Active';
+                } else  {
+                    return 'In-Active';
+                }
+                return $query->status;
+            })
+            ->addColumn('action', '{{modelNameSingularLowerCase}}.action');
+    }
+
+    public function query({{modelName}} $model)
+    {
+        return $model->newQuery();
+    }
+
+    public function html()
+    {
+       return $this->builder()
+            ->columns($this->getColumns())
+            ->minifiedAjax()
+            ->addAction(['width' => '120px', 'printable' => false, 'title' => 'Actions'])
+            ->parameters([
+                'dom'       => 'Blfrtip',
+                'stateSave' => true,
+                'order'     => [[0, 'desc']],
+                'buttons'   => [
+                    [
+                       'extend' => 'create',
+                       'className' => 'btn-datatable btn-default-datatable btn-sm-datatable no-corner',
+                       'text' => '<i class="fa fa-plus"></i>&nbsp; Create'
+                    ],
+                    [
+                       'extend' => 'export',
+                       'className' => 'btn-datatable btn-default-datatable btn-sm-datatable no-corner',
+                       'text' => '<i class="fa fa-download"></i>&nbsp; Export'
+                    ],
+                    [
+                       'extend' => 'print',
+                       'className' => 'btn-datatable btn-default-datatable btn-sm-datatable no-corner',
+                       'text' => '<i class="fa fa-print"></i>&nbsp; Print'
+                    ],
+                    [
+                       'extend' => 'reset',
+                       'className' => 'btn-datatable btn-default-datatable btn-sm-datatable no-corner',
+                       'text' => '<i class="fa fa-undo"></i>&nbsp; Reset'
+                    ],
+                    [
+                       'extend' => 'reload',
+                       'className' => 'btn-datatable btn-default-datatable btn-sm-datatable no-corner',
+                       'text' => '<i class="fa fa-sync-alt"></i>&nbsp; Reload'
+                    ],
+                ],
+                'language' => [
+                    'url' => url('//cdn.datatables.net/plug-ins/1.10.12/i18n/English.json'),
+                ],
+            ]);
+    }
+
+    protected function getColumns()
+    {
+        $table = new {{modelName}};
+        $columns = $table->getTableColumns();
+        $columns = array_diff($columns, $this->hidden);
+
+        return  $columns;
+    }
+
+
+    protected function filename()
+    {
+        return '{{modelName}}_' . date('YmdHis');
+    }
+}

@@ -1,0 +1,65 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use Illuminate\Http\Request;
+use App\Http\Controllers\Api\BaseController as BaseController;
+use App\Models\{{modelName}};
+
+use Illuminate\Support\Facades\Validator;
+
+class {{modelName}}Controller extends BaseController
+{
+    public function index()
+    {
+        ${{modelNamePluralLowerCase}} = {{modelName}}::latest()->get();
+        return $this->sendResponse(${{modelNamePluralLowerCase}}, 'success');
+    }
+
+    public function store(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            {{validationArr}}
+        ]);
+        if($validator->fails())
+        {
+            return response(['errors' => $validator->errors()->all()], 422);
+        }
+
+        ${{modelNameSingularLowerCase}} = {{modelName}}::create($request->all());
+
+        return $this->sendResponse(${{modelNameSingularLowerCase}}, 'added successfully');
+    }
+
+    public function show($id)
+    {
+        ${{modelNameSingularLowerCase}} = {{modelName}}::findOrFail($id);
+        return $this->sendResponse(${{modelNameSingularLowerCase}}, 'success');
+    }
+
+    public function update(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            {{validationArr}}
+        ]);
+        if($validator->fails())
+        {
+            return response(['errors' => $validator->errors()->all()], 422);
+        }
+
+        ${{modelNameSingularLowerCase}} = {{modelName}}::findOrFail($id);
+        ${{modelNameSingularLowerCase}}->update($request->all());
+
+        return $this->sendResponse(${{modelNameSingularLowerCase}}, 'update successfully');
+    }
+
+    public function destroy($id)
+    {
+        ${{modelNameSingularLowerCase}} = {{modelName}}::findOrFail($id);
+        ${{modelNameSingularLowerCase}}->is_deleted = 1;
+        ${{modelNameSingularLowerCase}}->save();
+        // Variant::destroy($id);
+
+        return $this->sendResponse(null, 'deleted successfully');
+    }
+}

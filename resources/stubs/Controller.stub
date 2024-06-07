@@ -1,0 +1,92 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Repositories\{{modelName}}Repository;
+use App\DataTables\{{modelName}}DataTable;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
+use App\Models\{{modelName}};
+
+
+class {{modelName}}Controller extends Controller
+{
+    private $path = "{{modelNameSingularLowerCase}}";
+
+    private ${{modelNameSingularLowerCase}}Repository;
+
+    public function __construct({{modelName}}Repository ${{modelNameSingularLowerCase}}Repo)
+    {
+        $this->{{modelNameSingularLowerCase}}Repository = ${{modelNameSingularLowerCase}}Repo;
+    }
+
+    public function index({{modelName}}DataTable $dataTabel)
+    {
+        return $dataTabel->render($this->path.'.index');
+    }
+
+    public function create() {
+        return view($this->path.'.create');
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            {{validationArr}}
+        ]);
+        DB::beginTransaction();
+        try {
+            ${{modelNameSingularLowerCase}} = {{modelName}}::create($request->all());
+            DB::commit();
+            return redirect()->back()->with('success', 'Created successfully');
+        } catch(\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('alert', 'Alert : '.$e->getMessage());
+        }
+    }
+
+    public function show($id)
+    {
+        ${{modelNameSingularLowerCase}} = {{modelName}}::findOrFail($id);
+
+        return view($this->path.'.show', [
+            '{{modelNameSingularLowerCase}}' => ${{modelNameSingularLowerCase}},
+        ]);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            {{validationArr}}
+        ]);
+
+        DB::beginTransaction();
+        try {
+            ${{modelNameSingularLowerCase}} = {{modelName}}::findOrFail($id);
+            ${{modelNameSingularLowerCase}}->update($request->all());
+            DB::commit();
+            return redirect()->back()->with('success', 'Update successfully');
+        } catch(\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('alert', 'Alert : '.$e->getMessage());
+        }
+    }
+
+    public function destroy($id)
+    {
+        try {
+            ${{modelNameSingularLowerCase}} = {{modelName}}::findOrFail($id);
+            ${{modelNameSingularLowerCase}}->is_deleted = 1;
+            ${{modelNameSingularLowerCase}}->save();
+
+            //{{modelName}}::destroy($id);
+            return redirect()->back()->with('success', 'Delete successfully!');
+        } catch(\Exception $e) {
+            return redirect()->back()->with('alert', 'Alert : '.$e->getMessage());
+        }
+
+    }
+}
+
+

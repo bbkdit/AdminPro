@@ -1,0 +1,13 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use App\Traits\AdvanceSchema;
+
+class {{modelName}} extends Model
+{
+    use AdvanceSchema;
+
+    protected $guarded = ['id'];
+}
